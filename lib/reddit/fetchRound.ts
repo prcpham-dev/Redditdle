@@ -5,6 +5,7 @@ import {
 } from "./constants";
 import { getPostUpvotes, isEligiblePost } from "./filters";
 import { toRoundPost } from "./mapPost";
+import { createSeededRandom } from "./seededRandom";
 import type {
   FetchRoundOptions,
   GameRound,
@@ -38,7 +39,11 @@ function formatUpvoteRange(minUpvotes: number, maxUpvotes: number): string {
 }
 
 /** Fisher–Yates partial shuffle; picks `count` distinct random items. */
-function pickRandom<T>(items: T[], count: number): T[] {
+function pickRandom<T>(
+  items: T[],
+  count: number,
+  random: () => number = Math.random,
+): T[] {
   if (items.length < count) {
     throw new Error(
       `Not enough eligible posts (need ${count}, found ${items.length})`,
@@ -46,7 +51,7 @@ function pickRandom<T>(items: T[], count: number): T[] {
   }
   const pool = [...items];
   for (let i = 0; i < count; i++) {
-    const j = i + Math.floor(Math.random() * (pool.length - i));
+    const j = i + Math.floor(random() * (pool.length - i));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
   return pool.slice(0, count);
@@ -111,7 +116,9 @@ export async function fetchGameRound(
     );
   }
 
-  const [postA, postB] = pickRandom(eligible, 2);
+  const random =
+    options.seed != null ? createSeededRandom(options.seed) : Math.random;
+  const [postA, postB] = pickRandom(eligible, 2, random);
 
   for (const post of [postA, postB]) {
     const upvotes = getPostUpvotes(post);

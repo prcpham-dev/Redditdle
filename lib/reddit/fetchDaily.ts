@@ -1,9 +1,13 @@
 import { DEFAULT_MAX_UPVOTES, DEFAULT_MIN_UPVOTES } from "./constants";
-import { DAILY_SUBREDDITS } from "./dailySubreddits";
+import {
+  DAILY_ROUND_COUNT,
+  selectDailySubreddits,
+} from "./dailySubreddits";
 import { fetchGameRound } from "./fetchRound";
+import { dailyRoundSeed, getDailyDateKey } from "./seededRandom";
 import type { FetchRoundOptions, GameRoundPayload } from "./types";
 
-const EXPECTED_ROUNDS = DAILY_SUBREDDITS.length;
+const EXPECTED_ROUNDS = DAILY_ROUND_COUNT;
 
 /**
  * Builds today's full puzzle by fetching one round per configured subreddit.
@@ -22,6 +26,18 @@ export async function fetchDailyPuzzle(
         minUpvotes,
       }),
     ),
+  const dateKey = getDailyDateKey();
+  const subreddits = selectDailySubreddits(dateKey);
+  const rounds = await Promise.all(
+    subreddits.map((subreddit, index) => {
+      const round = index + 1;
+      return fetchGameRound(subreddit, {
+        round,
+        sort: "hot",
+        maxUpvotes,
+        seed: dailyRoundSeed(dateKey, subreddit, round),
+      });
+    }),
   );
 
   const payload = rounds.flat();
