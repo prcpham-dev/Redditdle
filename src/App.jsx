@@ -8,10 +8,12 @@ function App() {
     guessHistory,
     hasPlayedToday,
     isLoading,
+    loadError,
     activeRound,
     totalRounds,
     startGame,
     handleGuess,
+    loadDailyData,
     generateShareText,
   } = useGameLogic();
 
@@ -29,6 +31,27 @@ function App() {
     return (
       <main className="flex min-h-screen items-center justify-center bg-zinc-100 p-6">
         <p className="text-lg text-zinc-600">Loading today&apos;s puzzle…</p>
+        <p className="mt-2 text-sm text-zinc-400">Fetching posts from Reddit</p>
+      </main>
+    );
+  }
+
+  if (loadError && !hasPlayedToday) {
+    return (
+      <main className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-4 bg-zinc-100 p-6">
+        <h1 className="text-2xl font-bold text-orange-600">Redditdle</h1>
+        <p className="text-center text-zinc-700">{loadError}</p>
+        <p className="text-center text-sm text-zinc-500">
+          Run <code className="rounded bg-white px-1">npm run dev</code> (Next.js) alongside{" "}
+          <code className="rounded bg-white px-1">npm run dev:game</code> (Vite).
+        </p>
+        <button
+          type="button"
+          onClick={loadDailyData}
+          className="rounded-lg bg-orange-500 px-4 py-3 font-semibold text-white hover:bg-orange-600"
+        >
+          Retry
+        </button>
       </main>
     );
   }
@@ -54,7 +77,7 @@ function App() {
                 in devtools to replay.
               </p>
             </>
-          ) : (
+          ) : totalRounds > 0 ? (
             <>
               <p className="text-center text-zinc-700">
                 {totalRounds} rounds. Guess whether Post B has more upvotes than Post A.
@@ -67,7 +90,7 @@ function App() {
                 Start Game
               </button>
             </>
-          )}
+          ) : null}
         </section>
       )}
 
