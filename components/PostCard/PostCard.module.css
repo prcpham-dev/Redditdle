@@ -1,0 +1,66 @@
+.card {
+  width: 100%;
+  max-width: 400px;
+  height: 400px;
+  background-color: #1a1a1a;
+  border-radius: 16px;
+  padding: 24px;
+  cursor: pointer;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  border: 2px solid transparent;
+  box-sizing: border-box;
+}
+
+.card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.6);
+  border-color: #333333;
+}
+
+.title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #ffffff;
+  margin-bottom: 24px;
+  line-height: 1.4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 5;
+  -webkit-box-orient: vertical;
+}
+
+.upvotesContainer {
+  margin-top: auto;
+  padding-top: 24px;
+}
+
+.upvoteLabel {
+  font-size: 14px;
+  color: #a0a0a0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.upvoteCount {
+  font-size: 48px;
+  font-weight: bold;
+  color: #ff4500;
+}
+
+.hiddenCount {
+  font-size: 48px;
+  font-weight: bold;
+  color: #444444;
+}
+
+.winner {
+  border-color: #22c55e;
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+}
+
+.loser {
+  border-color: #ef4444;
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}

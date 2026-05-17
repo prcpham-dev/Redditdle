@@ -1,0 +1,67 @@
+.container {
+  width: 100%;
+  max-width: 500px;
+  padding: 40px;
+  margin: 0 auto;
+  background-color: #1a1a1a;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #a0a0a0;
+  margin-bottom: 32px;
+}
+
+.input {
+  width: 100%;
+  padding: 16px;
+  font-size: 18px;
+  background-color: #2a2a2a;
+  border: 2px solid #3a3a3a;
+  border-radius: 8px;
+  color: #ffffff;
+  margin-bottom: 24px;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #ff4500; /* Reddit orange */
+}
+
+.button {
+  width: 100%;
+  padding: 16px;
+  font-size: 18px;
+  font-weight: bold;
+  background-color: #ff4500;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+.button:hover {
+  background-color: #ff5722;
+}
+
+.button:active {
+  transform: scale(0.98);
+}
+
+.button:disabled {
+  background-color: #555555;
+  cursor: not-allowed;
+}

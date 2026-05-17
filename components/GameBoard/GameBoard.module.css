@@ -1,0 +1,74 @@
+.container {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.cardsContainer {
+  gap: 32px;
+  margin-top: 40px;
+  margin-bottom: 40px;
+}
+
+.vsText {
+  font-size: 24px;
+  font-weight: bold;
+  color: #555555;
+  margin: 0 16px;
+}
+
+.nextButton {
+  padding: 16px 32px;
+  font-size: 18px;
+  font-weight: bold;
+  background-color: #ffffff;
+  color: #000000;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.1s ease;
+  margin: 0 auto;
+  display: block;
+}
+
+.nextButton:hover {
+  background-color: #e0e0e0;
+}
+
+.nextButton:active {
+  transform: scale(0.98);
+}
+
+.resultText {
+  font-size: 28px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 24px;
+}
+
+.resultCorrect {
+  color: #22c55e;
+}
+
+.resultWrong {
+  color: #ef4444;
+}
+
+.gameOverContainer {
+  text-align: center;
+  padding: 64px 0;
+}
+
+.gameOverTitle {
+  font-size: 48px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-bottom: 16px;
+}
+
+.gameOverScore {
+  font-size: 24px;
+  color: #a0a0a0;
+  margin-bottom: 48px;
+}
