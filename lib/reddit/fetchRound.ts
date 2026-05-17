@@ -1,4 +1,11 @@
-import { isEligiblePost } from "./filters";
+import {
+  DEFAULT_MAX_UPVOTES,
+  DEFAULT_MIN_UPVOTES,
+  hasMaxUpvoteCap,
+} from "./constants";
+import { getPostUpvotes, isEligiblePost } from "./filters";
+import { toRoundPost } from "./mapPost";
+import { createSeededRandom } from "./seededRandom";
 import type {
   FetchRoundOptions,
   GameRound,
@@ -18,8 +25,25 @@ function formatSubreddit(subreddit: string): string {
   return `r/${normalizeSubreddit(subreddit)}`;
 }
 
+function formatUpvoteRange(minUpvotes: number, maxUpvotes: number): string {
+  if (minUpvotes > 0 && hasMaxUpvoteCap(maxUpvotes)) {
+    return `with ${minUpvotes.toLocaleString()}–${maxUpvotes.toLocaleString()} upvotes`;
+  }
+  if (minUpvotes > 0) {
+    return `with at least ${minUpvotes.toLocaleString()} upvotes`;
+  }
+  if (hasMaxUpvoteCap(maxUpvotes)) {
+    return `with at most ${maxUpvotes.toLocaleString()} upvotes`;
+  }
+  return "matching upvote filters";
+}
+
 /** Fisher–Yates partial shuffle; picks `count` distinct random items. */
-function pickRandom<T>(items: T[], count: number): T[] {
+function pickRandom<T>(
+  items: T[],
+  count: number,
+  random: () => number = Math.random,
+): T[] {
   if (items.length < count) {
     throw new Error(
       `Not enough eligible posts (need ${count}, found ${items.length})`,
@@ -27,7 +51,7 @@ function pickRandom<T>(items: T[], count: number): T[] {
   }
   const pool = [...items];
   for (let i = 0; i < count; i++) {
-    const j = i + Math.floor(Math.random() * (pool.length - i));
+    const j = i + Math.floor(random() * (pool.length - i));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
   return pool.slice(0, count);
@@ -69,13 +93,6 @@ async function fetchListing(url: string): Promise<RedditPostRaw[]> {
   return json.data.children.map((child) => child.data);
 }
 
-function toRoundPost(post: RedditPostRaw) {
-  return {
-    title: post.title.trim(),
-    upvotes: post.ups ?? post.score ?? 0,
-  };
-}
-
 /**
  * Fetches posts from reddit.com/r/{subreddit}, filters unsuitable entries,
  * picks two at random, and returns game-engine JSON.
@@ -84,10 +101,36 @@ export async function fetchGameRound(
   subreddit: string,
   options: FetchRoundOptions = {},
 ): Promise<GameRoundPayload> {
+  const maxUpvotes = options.maxUpvotes ?? DEFAULT_MAX_UPVOTES;
+  const minUpvotes = options.minUpvotes ?? DEFAULT_MIN_UPVOTES;
   const url = buildListingUrl(subreddit, options);
   const posts = await fetchListing(url);
-  const eligible = posts.filter(isEligiblePost);
-  const [postA, postB] = pickRandom(eligible, 2);
+  const eligible = posts.filter((post) =>
+    isEligiblePost(post, maxUpvotes, minUpvotes),
+  );
+
+  if (eligible.length < 2) {
+    const range = formatUpvoteRange(minUpvotes, maxUpvotes);
+    throw new Error(
+      `Not enough eligible posts ${range} (found ${eligible.length})`,
+    );
+  }
+
+  const random =
+    options.seed != null ? createSeededRandom(options.seed) : Math.random;
+  const [postA, postB] = pickRandom(eligible, 2, random);
+
+  for (const post of [postA, postB]) {
+    const upvotes = getPostUpvotes(post);
+    if (
+      (hasMaxUpvoteCap(maxUpvotes) && upvotes > maxUpvotes) ||
+      (minUpvotes > 0 && upvotes < minUpvotes)
+    ) {
+      throw new Error(
+        `Selected post has ${upvotes} upvotes (allowed: ${formatUpvoteRange(minUpvotes, maxUpvotes)})`,
+      );
+    }
+  }
 
   const round: GameRound = {
     round: options.round ?? 1,

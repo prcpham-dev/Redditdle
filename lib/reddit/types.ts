@@ -1,6 +1,10 @@
 export type RoundPost = {
   title: string;
   upvotes: number;
+  /** Post text (selftext); empty string when none. */
+  body: string;
+  /** Direct image URL when the post is a single image. */
+  image?: string;
 };
 
 export type GameRound = {
@@ -29,14 +33,22 @@ export type RedditPostRaw = {
   over_18: boolean;
   stickied: boolean;
   is_video: boolean;
+  is_self?: boolean;
   is_gallery?: boolean;
   post_hint?: string;
   url?: string;
+  url_overridden_by_dest?: string;
   domain?: string;
   selftext?: string;
   removed_by_category?: string | null;
   media?: unknown;
   gallery_data?: unknown;
+  preview?: {
+    images?: Array<{
+      source?: { url?: string };
+      resolutions?: Array<{ url?: string }>;
+    }>;
+  };
 };
 
 export type FetchRoundOptions = {
@@ -47,4 +59,10 @@ export type FetchRoundOptions = {
   /** How many posts to pull before filtering (default: 100, max 100). */
   limit?: number;
   round?: number;
+  /** Only include posts at or below this value; at MAX_UPVOTES_LIMIT means no cap. */
+  maxUpvotes?: number;
+  /** Only include posts with at least this many upvotes (default: 1000). */
+  minUpvotes?: number;
+  /** When set, post selection uses this seed instead of Math.random(). */
+  seed?: number;
 };

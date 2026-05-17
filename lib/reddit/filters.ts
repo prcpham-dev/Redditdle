@@ -1,7 +1,8 @@
+import { hasMaxUpvoteCap } from "./constants";
+import { isImageOnlyPost } from "./mapPost";
 import type { RedditPostRaw } from "./types";
 
 const MEDIA_POST_HINTS = new Set([
-  "image",
   "hosted:video",
   "rich:video",
   "gallery",
@@ -18,6 +19,30 @@ const MEDIA_DOMAINS = new Set([
 ]);
 
 const IMAGE_URL_PATTERN = /\.(jpe?g|png|gif|webp|bmp)(\?.*)?$/i;
+
+export function getPostUpvotes(post: RedditPostRaw): number {
+  if (typeof post.ups === "number" && Number.isFinite(post.ups)) {
+    return post.ups;
+  }
+  if (typeof post.score === "number" && Number.isFinite(post.score)) {
+    return post.score;
+  }
+  return 0;
+}
+
+export function isWithinUpvoteLimit(
+  post: RedditPostRaw,
+  maxUpvotes: number,
+): boolean {
+  return getPostUpvotes(post) <= maxUpvotes;
+}
+
+export function isAboveMinUpvoteLimit(
+  post: RedditPostRaw,
+  minUpvotes: number,
+): boolean {
+  return getPostUpvotes(post) >= minUpvotes;
+}
 
 export function isDeletedOrRemoved(post: RedditPostRaw): boolean {
   const title = post.title?.trim() ?? "";
@@ -46,6 +71,9 @@ export function isNsfw(post: RedditPostRaw): boolean {
 }
 
 export function isMediaHeavy(post: RedditPostRaw): boolean {
+  if (isImageOnlyPost(post)) {
+    return false;
+  }
   if (post.is_video || post.is_gallery) {
     return true;
   }
@@ -64,7 +92,11 @@ export function isMediaHeavy(post: RedditPostRaw): boolean {
   return false;
 }
 
-export function isEligiblePost(post: RedditPostRaw): boolean {
+export function isEligiblePost(
+  post: RedditPostRaw,
+  maxUpvotes?: number,
+  minUpvotes?: number,
+): boolean {
   if (!post.title?.trim()) {
     return false;
   }
@@ -72,6 +104,18 @@ export function isEligiblePost(post: RedditPostRaw): boolean {
     return false;
   }
   if (isNsfw(post) || isDeletedOrRemoved(post) || isMediaHeavy(post)) {
+    return false;
+  }
+  if (minUpvotes !== undefined && minUpvotes > 0) {
+    if (!isAboveMinUpvoteLimit(post, minUpvotes)) {
+      return false;
+    }
+  }
+  if (
+    maxUpvotes !== undefined &&
+    hasMaxUpvoteCap(maxUpvotes) &&
+    !isWithinUpvoteLimit(post, maxUpvotes)
+  ) {
     return false;
   }
   return true;
