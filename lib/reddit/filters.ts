@@ -2,20 +2,20 @@ import { hasMaxUpvoteCap } from "./constants";
 import { isImageOnlyPost } from "./mapPost";
 import type { RedditPostRaw } from "./types";
 
-const MEDIA_POST_HINTS = new Set([
-  "hosted:video",
-  "rich:video",
-  "gallery",
-]);
-
-const MEDIA_DOMAINS = new Set([
-  "i.redd.it",
+/** Hosts that are never plain text/link posts (video, gif hosts, etc.). */
+const BLOCKED_DOMAINS = new Set([
   "v.redd.it",
   "i.imgur.com",
   "imgur.com",
   "gfycat.com",
   "redgifs.com",
   "streamable.com",
+]);
+
+const MEDIA_POST_HINTS = new Set([
+  "hosted:video",
+  "rich:video",
+  "gallery",
 ]);
 
 const IMAGE_URL_PATTERN = /\.(jpe?g|png|gif|webp|bmp)(\?.*)?$/i;
@@ -83,10 +83,11 @@ export function isMediaHeavy(post: RedditPostRaw): boolean {
   if (post.post_hint && MEDIA_POST_HINTS.has(post.post_hint)) {
     return true;
   }
-  if (post.domain && MEDIA_DOMAINS.has(post.domain.toLowerCase())) {
+  const domain = post.domain?.toLowerCase() ?? "";
+  if (domain && BLOCKED_DOMAINS.has(domain)) {
     return true;
   }
-  if (post.url && IMAGE_URL_PATTERN.test(post.url)) {
+  if (post.url && IMAGE_URL_PATTERN.test(post.url) && domain !== "i.redd.it") {
     return true;
   }
   return false;
@@ -104,9 +105,6 @@ export function isEligiblePost(
     return false;
   }
   if (isNsfw(post) || isDeletedOrRemoved(post) || isMediaHeavy(post)) {
-    return false;
-  }
-  if (!isImageOnlyPost(post)) {
     return false;
   }
   if (minUpvotes !== undefined && minUpvotes > 0) {

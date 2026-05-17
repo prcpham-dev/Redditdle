@@ -143,31 +143,44 @@ export default function Home() {
       }
       
       const payload: RoundData[] = [];
-      let candidateIndex = 0;
 
-      while (payload.length < numRounds && candidateIndex < candidatesList.length) {
-        const remaining = numRounds - payload.length;
-        const batch = candidatesList.slice(candidateIndex, candidateIndex + remaining);
-        candidateIndex += batch.length;
-
-        const results = await Promise.allSettled(
-          batch.map((sub, i) => {
-            const round = payload.length + i + 1;
-            const seedNum = resolvedSeed + round;
-            return fetch(
-              `/api/round?subreddit=${encodeURIComponent(sub)}&round=${round}&${query}&seed=${seedNum}`
-            ).then(async (res) => {
-              if (!res.ok) throw new Error("HTTP error");
-              const data = await res.json();
-              if (data.error || !data[0]) throw new Error("Payload error");
-              return data[0];
-            });
-          })
+      if (isCustomSubProvided) {
+        const res = await fetch(
+          `/api/round?subreddit=${encodeURIComponent(subreddit.trim())}&count=${numRounds}&${query}&seed=${resolvedSeed}`,
         );
+        const data = await res.json();
+        if (!res.ok || data.error) {
+          throw new Error(
+            typeof data.error === "string"
+              ? data.error
+              : "Failed to fetch custom puzzle rounds.",
+          );
+        }
+        if (!Array.isArray(data) || data.length < numRounds) {
+          throw new Error(
+            `Could only build ${Array.isArray(data) ? data.length : 0} of ${numRounds} rounds.`,
+          );
+        }
+        payload.push(...(data as RoundData[]));
+      } else {
+        let candidateIndex = 0;
 
-        for (const result of results) {
-          if (result.status === "fulfilled") {
-            payload.push(result.value);
+        while (payload.length < numRounds && candidateIndex < candidatesList.length) {
+          const sub = candidatesList[candidateIndex];
+          candidateIndex += 1;
+          const round = payload.length + 1;
+          const seedNum = resolvedSeed + round;
+
+          try {
+            const res = await fetch(
+              `/api/round?subreddit=${encodeURIComponent(sub)}&round=${round}&${query}&seed=${seedNum}`,
+            );
+            if (!res.ok) continue;
+            const data = await res.json();
+            if (data.error || !data[0]) continue;
+            payload.push(data[0] as RoundData);
+          } catch {
+            // Try next candidate subreddit.
           }
         }
       }

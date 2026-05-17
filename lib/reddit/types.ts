@@ -1,4 +1,5 @@
 export type RoundPost = {
+  id: string;
   title: string;
   upvotes: number;
   /** Post text (selftext); empty string when none. */
@@ -25,7 +26,15 @@ export type RedditListingResponse = {
   };
 };
 
+export type ListingSort = "hot" | "new" | "top" | "rising";
+
+export type ListingSource = {
+  sort: ListingSort;
+  topTime?: FetchRoundOptions["topTime"];
+};
+
 export type RedditPostRaw = {
+  id?: string;
   title: string;
   ups: number;
   score: number;
@@ -52,8 +61,8 @@ export type RedditPostRaw = {
 };
 
 export type FetchRoundOptions = {
-  /** Listing sort (default: hot). */
-  sort?: "hot" | "new" | "top" | "rising";
+  /** When set, only this listing is used; otherwise multiple sorts are pooled. */
+  sort?: ListingSort;
   /** Time filter when sort is `top` (default: week). */
   topTime?: "hour" | "day" | "week" | "month" | "year" | "all";
   /** How many posts to pull before filtering (default: 100, max 100). */
@@ -65,4 +74,6 @@ export type FetchRoundOptions = {
   minUpvotes?: number;
   /** When set, post selection uses this seed instead of Math.random(). */
   seed?: number;
+  /** Post ids already used in this game; excluded from selection. */
+  excludePostIds?: Iterable<string>;
 };

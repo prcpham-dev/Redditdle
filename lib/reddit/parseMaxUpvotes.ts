@@ -53,3 +53,18 @@ export function parseMinUpvotes(raw: string | null | undefined): number {
 
   return clampMinUpvotes(parsed);
 }
+
+/** Parses comma-separated post ids to exclude from selection. */
+export function parseExcludePostIds(
+  raw: string | null | undefined,
+): Set<string> {
+  if (raw == null || raw.trim() === "") {
+    return new Set();
+  }
+  return new Set(
+    raw
+      .split(",")
+      .map((id) => id.trim())
+      .filter(Boolean),
+  );
+}

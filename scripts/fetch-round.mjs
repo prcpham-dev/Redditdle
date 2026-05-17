@@ -7,8 +7,7 @@ const USER_AGENT = "redditdle:1.0.0 (by /u/redditdle-hackathon)";
 
 const MEDIA_POST_HINTS = new Set(["hosted:video", "rich:video", "gallery"]);
 
-const MEDIA_DOMAINS = new Set([
-  "i.redd.it",
+const BLOCKED_DOMAINS = new Set([
   "v.redd.it",
   "i.imgur.com",
   "imgur.com",
@@ -48,7 +47,6 @@ function isImageOnlyPost(post) {
 }
 
 function getPostImageUrl(post) {
-  if (!isImageOnlyPost(post)) return undefined;
   const candidates = [
     post.url_overridden_by_dest,
     post.url,
@@ -107,8 +105,11 @@ function isMediaHeavy(post) {
   if (post.is_video || post.is_gallery) return true;
   if (post.gallery_data || post.media) return true;
   if (post.post_hint && MEDIA_POST_HINTS.has(post.post_hint)) return true;
-  if (post.domain && MEDIA_DOMAINS.has(post.domain.toLowerCase())) return true;
-  if (post.url && IMAGE_URL_PATTERN.test(post.url)) return true;
+  const domain = post.domain?.toLowerCase() ?? "";
+  if (domain && BLOCKED_DOMAINS.has(domain)) return true;
+  if (post.url && IMAGE_URL_PATTERN.test(post.url) && domain !== "i.redd.it") {
+    return true;
+  }
   return false;
 }
 

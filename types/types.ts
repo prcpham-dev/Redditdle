@@ -1,4 +1,5 @@
 export type Post = {
+  id: string;
   title: string;
   upvotes: number;
   /** Direct image URL when the post is a single image. */

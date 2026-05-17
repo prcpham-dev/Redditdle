@@ -1,4 +1,5 @@
 import { getPostUpvotes } from "./filters";
+import { getPostId } from "./postId";
 import type { RedditPostRaw, RoundPost } from "./types";
 
 const IMAGE_URL_PATTERN = /\.(jpe?g|png|gif|webp|bmp)(\?.*)?$/i;
@@ -35,11 +36,7 @@ export function isImageOnlyPost(post: RedditPostRaw): boolean {
   return false;
 }
 
-export function getPostImageUrl(post: RedditPostRaw): string | undefined {
-  if (!isImageOnlyPost(post)) {
-    return undefined;
-  }
-
+function pickPreviewImageUrl(post: RedditPostRaw): string | undefined {
   const candidates = [
     post.url_overridden_by_dest,
     post.url,
@@ -58,12 +55,17 @@ export function getPostImageUrl(post: RedditPostRaw): string | undefined {
   return undefined;
 }
 
+export function getPostImageUrl(post: RedditPostRaw): string | undefined {
+  return pickPreviewImageUrl(post);
+}
+
 export function getPostBody(post: RedditPostRaw): string {
   return (post.selftext ?? "").trim();
 }
 
 export function toRoundPost(post: RedditPostRaw): RoundPost {
   const roundPost: RoundPost = {
+    id: getPostId(post),
     title: post.title.trim(),
     upvotes: getPostUpvotes(post),
     body: getPostBody(post),

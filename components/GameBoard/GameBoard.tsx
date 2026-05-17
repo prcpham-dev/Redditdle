@@ -2,9 +2,29 @@
 
 import React, { useState } from "react";
 import styles from "./GameBoard.module.css";
+import { collectPostIdsFromRounds } from "@/lib/reddit/postId";
 import { RoundData, GameBoardProps } from "../../types/types";
 import PostCard from "../PostCard/PostCard";
 import RoundIndicator, { RoundStatus } from "../RoundIndicator/RoundIndicator";
+
+function normalizeSubredditName(subreddit: string): string {
+  return subreddit.replace(/^\/?r\//i, "").trim().toLowerCase();
+}
+
+/** Excludes only posts already used from the same subreddit. */
+function buildExcludePostIdsParam(
+  rounds: RoundData[],
+  forSubreddit: string,
+): string {
+  const target = normalizeSubredditName(forSubreddit);
+  const ids = collectPostIdsFromRounds(
+    rounds.filter((r) => normalizeSubredditName(r.subreddit) === target),
+  );
+  if (ids.length === 0) {
+    return "";
+  }
+  return `&excludePostIds=${encodeURIComponent(ids.join(","))}`;
+}
 
 export default function GameBoard({
   rounds: initialRounds,
@@ -75,7 +95,10 @@ export default function GameBoard({
   const postA = currentRound.postA;
   const postB = currentRound.postB;
 
-  const fetchNextRound = async (nextIndex: number) => {
+  const fetchNextRound = async (
+    nextIndex: number,
+    roundsForExclude: RoundData[],
+  ) => {
     if (isFetchingNext) return;
     setIsFetchingNext(true);
 
@@ -83,18 +106,21 @@ export default function GameBoard({
       const minUp = upvoteLimits?.minUpvotes ?? 1000;
       const maxUp = upvoteLimits?.maxUpvotes ?? 1000000;
       const limitsQuery = `minUpvotes=${minUp}&maxUpvotes=${maxUp}`;
-      
-      let data: any = null;
+      let data: RoundData | null = null;
       let attempts = 0;
 
       while (!data && attempts < Math.max(10, subreddits.length)) {
         const subIndex = (nextIndex - 1 + attempts) % subreddits.length;
         const selectedSub = subreddits.length > 0 ? subreddits[subIndex] : "memes";
         const seedParam = seed !== null ? `&seed=${seed + nextIndex - 1 + attempts}` : "";
+        const excludeParam = buildExcludePostIdsParam(
+          roundsForExclude,
+          selectedSub,
+        );
 
         try {
           const res = await fetch(
-            `/api/round?subreddit=${encodeURIComponent(selectedSub)}&round=${nextIndex}&${limitsQuery}${seedParam}`
+            `/api/round?subreddit=${encodeURIComponent(selectedSub)}&round=${nextIndex}&${limitsQuery}${seedParam}${excludeParam}`,
           );
           if (res.ok) {
             const json = await res.json();
@@ -134,7 +160,7 @@ export default function GameBoard({
 
     // Background prefetch next round immediately if they guessed right in endless mode!
     if (isEndless && isCorrect) {
-      fetchNextRound(dynamicRounds.length + 1);
+      fetchNextRound(dynamicRounds.length + 1, dynamicRounds);
     }
   };
 
@@ -152,17 +178,20 @@ export default function GameBoard({
           const minUp = upvoteLimits?.minUpvotes ?? 1000;
           const maxUp = upvoteLimits?.maxUpvotes ?? 1000000;
           const limitsQuery = `minUpvotes=${minUp}&maxUpvotes=${maxUp}`;
-          
           let attempts = 0;
           while (!nextRound && attempts < Math.max(10, subreddits.length)) {
             const subIndex = (dynamicRounds.length + attempts) % subreddits.length;
             const selectedSub = subreddits.length > 0 ? subreddits[subIndex] : "memes";
             const nextIndex = dynamicRounds.length + 1;
             const seedParam = seed !== null ? `&seed=${seed + nextIndex - 1 + attempts}` : "";
+            const excludeParam = buildExcludePostIdsParam(
+              dynamicRounds,
+              selectedSub,
+            );
 
             try {
               const res = await fetch(
-                `/api/round?subreddit=${encodeURIComponent(selectedSub)}&round=${nextIndex}&${limitsQuery}${seedParam}`
+                `/api/round?subreddit=${encodeURIComponent(selectedSub)}&round=${nextIndex}&${limitsQuery}${seedParam}${excludeParam}`,
               );
               if (res.ok) {
                 const json = await res.json();

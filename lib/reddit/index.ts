@@ -11,7 +11,7 @@ export {
   selectDailySubreddits,
 } from "./dailySubreddits";
 export { fetchDailyPuzzle } from "./fetchDaily";
-export { fetchGameRound } from "./fetchRound";
+export { fetchGameRound, fetchMultipleGameRounds } from "./fetchRound";
 export {
   getPostUpvotes,
   isAboveMinUpvoteLimit,
@@ -28,8 +28,14 @@ export {
   toRoundPost,
 } from "./mapPost";
 export {
+  collectPostIdsFromRound,
+  collectPostIdsFromRounds,
+  getPostId,
+} from "./postId";
+export {
   clampMaxUpvotes,
   clampMinUpvotes,
+  parseExcludePostIds,
   parseMaxUpvotes,
   parseMinUpvotes,
 } from "./parseMaxUpvotes";

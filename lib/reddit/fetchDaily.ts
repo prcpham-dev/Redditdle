@@ -23,30 +23,23 @@ export async function fetchDailyPuzzle(
   const dateKey = getDailyDateKey();
   const candidates = getDailySubredditOrder(dateKey);
   const payload: GameRound[] = [];
-  let candidateIndex = 0;
 
-  while (payload.length < DAILY_ROUND_COUNT && candidateIndex < candidates.length) {
-    const remaining = DAILY_ROUND_COUNT - payload.length;
-    const batch = candidates.slice(candidateIndex, candidateIndex + remaining);
-    candidateIndex += batch.length;
+  for (const subreddit of candidates) {
+    if (payload.length >= DAILY_ROUND_COUNT) {
+      break;
+    }
 
-    const results = await Promise.allSettled(
-      batch.map((subreddit, i) => {
-        const round = payload.length + i + 1;
-        return fetchGameRound(subreddit, {
-          round,
-          sort: "hot",
-          maxUpvotes,
-          minUpvotes,
-          seed: dailyRoundSeed(dateKey, subreddit, round),
-        });
-      }),
-    );
-
-    for (const result of results) {
-      if (result.status === "fulfilled") {
-        payload.push(...result.value);
-      }
+    const round = payload.length + 1;
+    try {
+      const [gameRound] = await fetchGameRound(subreddit, {
+        round,
+        maxUpvotes,
+        minUpvotes,
+        seed: dailyRoundSeed(dateKey, subreddit, round),
+      });
+      payload.push(gameRound);
+    } catch {
+      // Try next subreddit in today's order.
     }
   }
 
