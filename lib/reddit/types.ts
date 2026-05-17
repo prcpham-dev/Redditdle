@@ -59,8 +59,10 @@ export type FetchRoundOptions = {
   /** How many posts to pull before filtering (default: 100, max 100). */
   limit?: number;
   round?: number;
-  /** Only include posts with upvotes at or below this value (default: 1000). */
+  /** Only include posts at or below this value; at MAX_UPVOTES_LIMIT means no cap. */
   maxUpvotes?: number;
+  /** Only include posts with at least this many upvotes (default: 1000). */
+  minUpvotes?: number;
   /** When set, post selection uses this seed instead of Math.random(). */
   seed?: number;
 };

@@ -1,6 +1,8 @@
 export {
   DEFAULT_MAX_UPVOTES,
+  DEFAULT_MIN_UPVOTES,
   MAX_UPVOTES_LIMIT,
+  hasMaxUpvoteCap,
 } from "./constants";
 export {
   DAILY_ROUND_COUNT,
@@ -11,6 +13,7 @@ export { fetchDailyPuzzle } from "./fetchDaily";
 export { fetchGameRound } from "./fetchRound";
 export {
   getPostUpvotes,
+  isAboveMinUpvoteLimit,
   isDeletedOrRemoved,
   isEligiblePost,
   isMediaHeavy,
@@ -23,7 +26,12 @@ export {
   isImageOnlyPost,
   toRoundPost,
 } from "./mapPost";
-export { clampMaxUpvotes, parseMaxUpvotes } from "./parseMaxUpvotes";
+export {
+  clampMaxUpvotes,
+  clampMinUpvotes,
+  parseMaxUpvotes,
+  parseMinUpvotes,
+} from "./parseMaxUpvotes";
 export type {
   FetchRoundOptions,
   GameRound,
