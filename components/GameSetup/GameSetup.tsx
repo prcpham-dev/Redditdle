@@ -43,11 +43,6 @@ export default function GameSetup({
         </button>
 
         <h1 className={styles.title}>Redditdle</h1>
-        <p className={styles.subtitle}>Which post has more upvotes?</p>
-
-        <p className={styles.limitBadge}>
-          Post cap: ≤ {maxUpvotes.toLocaleString()} upvotes
-        </p>
 
         {error && (
           <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-lg flex flex-col items-center justify-center text-center">
