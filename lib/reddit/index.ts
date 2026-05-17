@@ -13,6 +13,12 @@ export {
   isNsfw,
   isWithinUpvoteLimit,
 } from "./filters";
+export {
+  getPostBody,
+  getPostImageUrl,
+  isImageOnlyPost,
+  toRoundPost,
+} from "./mapPost";
 export { clampMaxUpvotes, parseMaxUpvotes } from "./parseMaxUpvotes";
 export type {
   FetchRoundOptions,

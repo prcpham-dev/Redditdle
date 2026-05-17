@@ -1,7 +1,7 @@
+import { isImageOnlyPost } from "./mapPost";
 import type { RedditPostRaw } from "./types";
 
 const MEDIA_POST_HINTS = new Set([
-  "image",
   "hosted:video",
   "rich:video",
   "gallery",
@@ -57,6 +57,9 @@ export function isNsfw(post: RedditPostRaw): boolean {
 }
 
 export function isMediaHeavy(post: RedditPostRaw): boolean {
+  if (isImageOnlyPost(post)) {
+    return false;
+  }
   if (post.is_video || post.is_gallery) {
     return true;
   }
