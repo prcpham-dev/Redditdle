@@ -51,14 +51,14 @@ export default function Home() {
 
     try {
       const response = await fetch(`/api/daily?${buildUpvoteLimitsQuery(limits)}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch daily puzzle data.");
-      }
-
       const json = await response.json();
 
-      if (json.error) {
-        throw new Error(json.error);
+      if (!response.ok) {
+        throw new Error(
+          typeof json.error === "string"
+            ? json.error
+            : "Failed to fetch daily puzzle data.",
+        );
       }
 
       setRounds(json);

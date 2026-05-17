@@ -7,6 +7,7 @@ export {
 export {
   DAILY_ROUND_COUNT,
   DAILY_SUBREDDITS,
+  getDailySubredditOrder,
   selectDailySubreddits,
 } from "./dailySubreddits";
 export { fetchDailyPuzzle } from "./fetchDaily";

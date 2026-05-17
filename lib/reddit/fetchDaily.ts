@@ -1,52 +1,63 @@
 import { DEFAULT_MAX_UPVOTES, DEFAULT_MIN_UPVOTES } from "./constants";
 import {
   DAILY_ROUND_COUNT,
-  selectDailySubreddits,
+  getDailySubredditOrder,
 } from "./dailySubreddits";
 import { fetchGameRound } from "./fetchRound";
 import { dailyRoundSeed, getDailyDateKey } from "./seededRandom";
-import type { FetchRoundOptions, GameRoundPayload } from "./types";
-
-const EXPECTED_ROUNDS = DAILY_ROUND_COUNT;
+import type {
+  FetchRoundOptions,
+  GameRound,
+  GameRoundPayload,
+} from "./types";
 
 /**
- * Builds today's full puzzle by fetching one round per configured subreddit.
+ * Builds today's puzzle: tries subreddits in date-seeded order until
+ * {@link DAILY_ROUND_COUNT} rounds succeed (skips subs with too few eligible posts).
  */
 export async function fetchDailyPuzzle(
   options: Pick<FetchRoundOptions, "maxUpvotes" | "minUpvotes"> = {},
 ): Promise<GameRoundPayload> {
   const maxUpvotes = options.maxUpvotes ?? DEFAULT_MAX_UPVOTES;
   const minUpvotes = options.minUpvotes ?? DEFAULT_MIN_UPVOTES;
-  const rounds = await Promise.all(
-    DAILY_SUBREDDITS.map((subreddit, index) =>
-      fetchGameRound(subreddit, {
-        round: index + 1,
-        sort: "hot",
-        maxUpvotes,
-        minUpvotes,
-      }),
-    ),
   const dateKey = getDailyDateKey();
-  const subreddits = selectDailySubreddits(dateKey);
-  const rounds = await Promise.all(
-    subreddits.map((subreddit, index) => {
-      const round = index + 1;
-      return fetchGameRound(subreddit, {
-        round,
-        sort: "hot",
-        maxUpvotes,
-        seed: dailyRoundSeed(dateKey, subreddit, round),
-      });
-    }),
-  );
+  const candidates = getDailySubredditOrder(dateKey);
+  const payload: GameRound[] = [];
+  let candidateIndex = 0;
 
-  const payload = rounds.flat();
+  while (payload.length < DAILY_ROUND_COUNT && candidateIndex < candidates.length) {
+    const remaining = DAILY_ROUND_COUNT - payload.length;
+    const batch = candidates.slice(candidateIndex, candidateIndex + remaining);
+    candidateIndex += batch.length;
 
-  if (payload.length !== EXPECTED_ROUNDS) {
+    const results = await Promise.allSettled(
+      batch.map((subreddit, i) => {
+        const round = payload.length + i + 1;
+        return fetchGameRound(subreddit, {
+          round,
+          sort: "hot",
+          maxUpvotes,
+          minUpvotes,
+          seed: dailyRoundSeed(dateKey, subreddit, round),
+        });
+      }),
+    );
+
+    for (const result of results) {
+      if (result.status === "fulfilled") {
+        payload.push(...result.value);
+      }
+    }
+  }
+
+  if (payload.length < DAILY_ROUND_COUNT) {
     throw new Error(
-      `Expected ${EXPECTED_ROUNDS} rounds but received ${payload.length}`,
+      `Could only build ${payload.length} of ${DAILY_ROUND_COUNT} daily rounds with current upvote limits. Try widening the range or lowering the minimum.`,
     );
   }
 
-  return payload;
+  return payload.slice(0, DAILY_ROUND_COUNT).map((round, index) => ({
+    ...round,
+    round: index + 1,
+  }));
 }

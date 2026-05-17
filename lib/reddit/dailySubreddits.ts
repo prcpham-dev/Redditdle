@@ -39,9 +39,14 @@ export const DAILY_SUBREDDITS = [
   "AskHistorians",
 ] as const;
 
-/** Picks today's subreddits from the pool (unique, seeded by date). */
-export function selectDailySubreddits(dateKey: string): string[] {
+/** Full pool shuffled for the day; used to pick rounds with fallbacks. */
+export function getDailySubredditOrder(dateKey: string): string[] {
   const pool = [...DAILY_SUBREDDITS];
   const seed = hashString(`${dateKey}:daily-subreddits`);
-  return pickSeededSample(pool, DAILY_ROUND_COUNT, seed);
+  return pickSeededSample(pool, pool.length, seed);
+}
+
+/** First N subs in today's order (may not all be playable at current upvote limits). */
+export function selectDailySubreddits(dateKey: string): string[] {
+  return getDailySubredditOrder(dateKey).slice(0, DAILY_ROUND_COUNT);
 }
