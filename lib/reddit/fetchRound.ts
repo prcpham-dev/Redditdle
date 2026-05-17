@@ -1,4 +1,5 @@
 import { isEligiblePost } from "./filters";
+import { toRoundPost } from "./mapPost";
 import type {
   FetchRoundOptions,
   GameRound,
@@ -67,13 +68,6 @@ async function fetchListing(url: string): Promise<RedditPostRaw[]> {
 
   const json = (await response.json()) as RedditListingResponse;
   return json.data.children.map((child) => child.data);
-}
-
-function toRoundPost(post: RedditPostRaw) {
-  return {
-    title: post.title.trim(),
-    upvotes: post.ups ?? post.score ?? 0,
-  };
 }
 
 /**

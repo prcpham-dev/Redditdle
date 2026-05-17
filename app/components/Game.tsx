@@ -109,12 +109,38 @@ export function Game() {
             <article className="rounded-lg border border-zinc-200 p-4">
               <p className="text-xs font-semibold uppercase text-zinc-400">Post A</p>
               <p className="font-medium">{activeRound.postA.title}</p>
-              <p className="text-sm text-zinc-500">??? upvotes</p>
+              {activeRound.postA.body ? (
+                <p className="mt-2 line-clamp-4 text-sm text-zinc-600">
+                  {activeRound.postA.body}
+                </p>
+              ) : null}
+              {activeRound.postA.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={activeRound.postA.image}
+                  alt=""
+                  className="mt-2 max-h-48 w-full rounded object-contain"
+                />
+              ) : null}
+              <p className="mt-2 text-sm text-zinc-500">??? upvotes</p>
             </article>
             <article className="rounded-lg border border-zinc-200 p-4">
               <p className="text-xs font-semibold uppercase text-zinc-400">Post B</p>
               <p className="font-medium">{activeRound.postB.title}</p>
-              <p className="text-sm text-zinc-500">??? upvotes</p>
+              {activeRound.postB.body ? (
+                <p className="mt-2 line-clamp-4 text-sm text-zinc-600">
+                  {activeRound.postB.body}
+                </p>
+              ) : null}
+              {activeRound.postB.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={activeRound.postB.image}
+                  alt=""
+                  className="mt-2 max-h-48 w-full rounded object-contain"
+                />
+              ) : null}
+              <p className="mt-2 text-sm text-zinc-500">??? upvotes</p>
             </article>
           </div>
 
