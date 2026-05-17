@@ -5,12 +5,7 @@
 
 const USER_AGENT = "redditdle:1.0.0 (by /u/redditdle-hackathon)";
 
-const MEDIA_POST_HINTS = new Set([
-  "image",
-  "hosted:video",
-  "rich:video",
-  "gallery",
-]);
+const MEDIA_POST_HINTS = new Set(["hosted:video", "rich:video", "gallery"]);
 
 const MEDIA_DOMAINS = new Set([
   "i.redd.it",
@@ -23,6 +18,63 @@ const MEDIA_DOMAINS = new Set([
 ]);
 
 const IMAGE_URL_PATTERN = /\.(jpe?g|png|gif|webp|bmp)(\?.*)?$/i;
+
+function decodeRedditUrl(url) {
+  return url.replace(/&amp;/g, "&");
+}
+
+function isImageOnlyPost(post) {
+  if (post.is_video || post.is_gallery || post.gallery_data) return false;
+  if (post.post_hint === "hosted:video" || post.post_hint === "rich:video") {
+    return false;
+  }
+  if (post.post_hint === "image") return true;
+  if (
+    post.domain?.toLowerCase() === "i.redd.it" &&
+    post.url &&
+    IMAGE_URL_PATTERN.test(post.url)
+  ) {
+    return true;
+  }
+  if (
+    !post.is_self &&
+    post.url &&
+    IMAGE_URL_PATTERN.test(post.url) &&
+    !(post.selftext?.trim())
+  ) {
+    return true;
+  }
+  return false;
+}
+
+function getPostImageUrl(post) {
+  if (!isImageOnlyPost(post)) return undefined;
+  const candidates = [
+    post.url_overridden_by_dest,
+    post.url,
+    post.preview?.images?.[0]?.source?.url,
+    post.preview?.images?.[0]?.resolutions?.slice(-1)[0]?.url,
+  ];
+  for (const candidate of candidates) {
+    if (!candidate) continue;
+    const decoded = decodeRedditUrl(candidate);
+    if (IMAGE_URL_PATTERN.test(decoded) || decoded.includes("i.redd.it")) {
+      return decoded;
+    }
+  }
+  return undefined;
+}
+
+function toRoundPost(post) {
+  const roundPost = {
+    title: post.title.trim(),
+    upvotes: post.ups ?? post.score ?? 0,
+    body: (post.selftext ?? "").trim(),
+  };
+  const image = getPostImageUrl(post);
+  if (image) roundPost.image = image;
+  return roundPost;
+}
 
 function normalizeSubreddit(subreddit) {
   return subreddit.replace(/^\/?r\//i, "").trim();
@@ -51,6 +103,7 @@ function isDeletedOrRemoved(post) {
 }
 
 function isMediaHeavy(post) {
+  if (isImageOnlyPost(post)) return false;
   if (post.is_video || post.is_gallery) return true;
   if (post.gallery_data || post.media) return true;
   if (post.post_hint && MEDIA_POST_HINTS.has(post.post_hint)) return true;
@@ -97,8 +150,8 @@ async function fetchGameRound(subreddit, round = 1) {
     {
       round,
       subreddit: formatSubreddit(subreddit),
-      postA: { title: postA.title.trim(), upvotes: postA.ups ?? postA.score ?? 0 },
-      postB: { title: postB.title.trim(), upvotes: postB.ups ?? postB.score ?? 0 },
+      postA: toRoundPost(postA),
+      postB: toRoundPost(postB),
     },
   ];
 }
