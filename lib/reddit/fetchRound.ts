@@ -18,10 +18,14 @@ import type {
 /** Listings merged when no single `sort` is requested. */
 const POOLED_LISTING_SOURCES: ListingSource[] = [
   { sort: "hot" },
+  { sort: "new" },
+  { sort: "rising" },
+  { sort: "top", topTime: "day" },
   { sort: "top", topTime: "week" },
+  { sort: "top", topTime: "month" },
 ];
 
-const USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
+const USER_AGENT = "redditdle:1.0.0 (by /u/redditdle-hackathon)";
 const REDDIT_BASE = "https://www.reddit.com";
 
 function normalizeSubreddit(subreddit: string): string {
