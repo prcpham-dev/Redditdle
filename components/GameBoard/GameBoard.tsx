@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import styles from "./GameBoard.module.css";
 import { RoundData, GameBoardProps } from "@/types/types";
 import PostCard from "../PostCard/PostCard";
 import RoundIndicator, { RoundStatus } from "../RoundIndicator/RoundIndicator";
-import { fetchRoundBatch, BATCH_SIZE, TOTAL_ROUNDS } from "@/lib/reddit/roundFetcher";
+import { fetchRoundBatch, BATCH_SIZE } from "@/lib/reddit/roundFetcher";
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
+const TOTAL_ROUNDS = 10;
 
 function buildLimitsQuery(upvoteLimits: { minUpvotes: number; maxUpvotes: number } | undefined): string {
   if (!upvoteLimits) return "minUpvotes=1000&maxUpvotes=1000000";
@@ -22,8 +22,6 @@ function getUsedPostIds(rounds: RoundData[]): Set<string> {
   }
   return ids;
 }
-
-// ─── Component ──────────────────────────────────────────────────────────────
 
 export default function GameBoard({
   rounds: initialRounds = [],
@@ -52,7 +50,6 @@ export default function GameBoard({
 
   const limitsQuery = buildLimitsQuery(upvoteLimits);
 
-  // ── Initial load: only runs when no rounds were passed in from props ───────
   useEffect(() => {
     if (hasInitialRounds) return; // skip — page.tsx already fetched them
     if (!subreddits.length) {
@@ -89,9 +86,8 @@ export default function GameBoard({
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
- // run once on mount only
+  // run once on mount only
 
-  // ── Prefetch a single upcoming round ─────────────────────────────────────
   const prefetchNext = useCallback(
     async (allRounds: RoundData[]) => {
       if (isPrefetchingRef.current) return;
@@ -125,7 +121,6 @@ export default function GameBoard({
     [subreddits, limitsQuery, seed, isEndless]
   );
 
-  // ── Guess handler ─────────────────────────────────────────────────────────
   const handleGuess = (selected: "A" | "B") => {
     if (hasGuessed || rounds.length === 0) return;
 
@@ -148,11 +143,9 @@ export default function GameBoard({
     }
   };
 
-  // ── Next round handler ────────────────────────────────────────────────────
   const handleNextRound = async () => {
     const currentStatus = roundStatuses[currentRoundIndex];
 
-    // Endless game over on wrong
     if (isEndless && currentStatus === "wrong") {
       setIsEndlessGameOver(true);
       return;
@@ -203,7 +196,6 @@ export default function GameBoard({
     prefetchNext(updatedRounds);
   };
 
-  // ── Loading / error screens ───────────────────────────────────────────────
   if (isInitialLoading) {
     return (
       <div className={styles.gameOverContainer}>
@@ -225,7 +217,6 @@ export default function GameBoard({
     );
   }
 
-  // ── Game over screens ────────────────────────────────────────────────────
   const isGameOver = isEndless
     ? isEndlessGameOver
     : currentRoundIndex >= TOTAL_ROUNDS;
@@ -269,7 +260,6 @@ export default function GameBoard({
     );
   }
 
-  // ── Guard: rounds not yet populated ────────────────────────────────────
   if (rounds.length === 0 || currentRoundIndex >= rounds.length) {
     return (
       <div className={styles.gameOverContainer}>
@@ -279,7 +269,6 @@ export default function GameBoard({
     );
   }
 
-  // ── Render ───────────────────────────────────────────────────────────────
   const currentRound = rounds[currentRoundIndex];
   const postA = currentRound.postA;
   const postB = currentRound.postB;
@@ -329,11 +318,10 @@ export default function GameBoard({
 
           {hasGuessed ? (
             <div
-              className={`pointer-events-auto ${styles.centerCircle} ${
-                roundStatuses[currentRoundIndex] === "correct"
-                  ? styles.circleCorrect
-                  : styles.circleWrong
-              } ${nextButtonBusy ? styles.circleLoading : ""}`}
+              className={`pointer-events-auto ${styles.centerCircle} ${roundStatuses[currentRoundIndex] === "correct"
+                ? styles.circleCorrect
+                : styles.circleWrong
+                } ${nextButtonBusy ? styles.circleLoading : ""}`}
               onClick={!nextButtonBusy ? handleNextRound : undefined}
               role="button"
               tabIndex={0}

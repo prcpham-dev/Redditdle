@@ -5,7 +5,6 @@ import {
   DEFAULT_MAX_UPVOTES,
   DEFAULT_MIN_UPVOTES,
   MAX_UPVOTES_LIMIT,
-  hasMaxUpvoteCap,
 } from "@/lib/reddit/constants";
 import {
   clampMaxUpvotes,

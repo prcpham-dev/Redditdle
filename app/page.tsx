@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import GameSetup from "@/components/GameSetup/GameSetup";
 import GameBoard from "@/components/GameBoard/GameBoard";
 import { DEFAULT_MAX_UPVOTES, DEFAULT_MIN_UPVOTES } from "@/lib/reddit/constants";

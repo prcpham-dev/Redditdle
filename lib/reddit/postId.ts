@@ -1,4 +1,4 @@
-import type { RedditPostRaw, RoundPost } from "./types";
+import type { RedditPostRaw } from "./types";
 
 /** Stable id for deduping and exclusion (Reddit id or title+author fallback). */
 export function getPostId(post: RedditPostRaw): string {
