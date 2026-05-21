@@ -49,6 +49,7 @@ async function fetchPooledPosts(subreddit, options) {
         : POOLED_LISTING_SOURCES;
     const results = await Promise.allSettled(sources.map(async (source) => {
         const normalizedSub = normalizeSubreddit(subreddit);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let posts = [];
         const queryOptions = { subredditName: normalizedSub, limit };
         if (source.sort === 'hot') {

@@ -22,39 +22,13 @@ function App() {
     const [gameState, setGameState] = useState('setup');
     const [rounds, setRounds] = useState([]);
     const [errorMessage, setErrorMessage] = useState('');
-    const [customConfig, setCustomConfig] = useState({
-        subreddit: '',
-        seed: '',
+    const [customConfig, setCustomConfig] = useState(() => ({
+        subreddit: localStorage.getItem('redditdle_custom_subreddit') ?? '',
+        seed: localStorage.getItem('redditdle_custom_seed') ?? '',
         isEndless: false,
-    });
+    }));
     const [currentRunSeed, setCurrentRunSeed] = useState(null);
     const [subreddits, setSubreddits] = useState([]);
-    // Restore inputs from localStorage on mount
-    useEffect(() => {
-        const subreddit = localStorage.getItem('redditdle_custom_subreddit') ?? '';
-        const seed = localStorage.getItem('redditdle_custom_seed') ?? '';
-        setCustomConfig({ subreddit, seed, isEndless: false });
-        const startGame = localStorage.getItem('redditdle_start_game');
-        if (startGame === 'true') {
-            localStorage.removeItem('redditdle_start_game');
-            const mode = localStorage.getItem('redditdle_game_mode');
-            if (mode === 'daily') {
-                void handleStartDaily();
-            }
-            else {
-                void handleStartCustom(subreddit, seed);
-            }
-        }
-    }, []);
-    const handleConfigChange = (newConfig) => {
-        setCustomConfig((prev) => {
-            if (newConfig.subreddit !== undefined)
-                localStorage.setItem('redditdle_custom_subreddit', newConfig.subreddit);
-            if (newConfig.seed !== undefined)
-                localStorage.setItem('redditdle_custom_seed', newConfig.seed);
-            return { ...prev, ...newConfig };
-        });
-    };
     const handleStartDaily = async () => {
         setGameState('loading');
         setErrorMessage('');
@@ -99,6 +73,34 @@ function App() {
             setErrorMessage(err instanceof Error ? err.message : 'An unexpected error occurred.');
             setGameState('error');
         }
+    };
+    // Restore inputs from localStorage on mount
+    useEffect(() => {
+        const subreddit = localStorage.getItem('redditdle_custom_subreddit') ?? '';
+        const seed = localStorage.getItem('redditdle_custom_seed') ?? '';
+        /* eslint-disable react-hooks/set-state-in-effect */
+        const startGame = localStorage.getItem('redditdle_start_game');
+        if (startGame === 'true') {
+            localStorage.removeItem('redditdle_start_game');
+            const mode = localStorage.getItem('redditdle_game_mode');
+            if (mode === 'daily') {
+                void handleStartDaily();
+            }
+            else {
+                void handleStartCustom(subreddit, seed);
+            }
+        }
+        /* eslint-enable react-hooks/set-state-in-effect */
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    const handleConfigChange = (newConfig) => {
+        setCustomConfig((prev) => {
+            if (newConfig.subreddit !== undefined)
+                localStorage.setItem('redditdle_custom_subreddit', newConfig.subreddit);
+            if (newConfig.seed !== undefined)
+                localStorage.setItem('redditdle_custom_seed', newConfig.seed);
+            return { ...prev, ...newConfig };
+        });
     };
     const handlePlayAgain = () => {
         setGameState('setup');

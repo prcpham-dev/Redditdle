@@ -1,22 +1,15 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
 import './index.css';
-import { StrictMode, useEffect, useState } from 'react';
+import { StrictMode, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { requestExpandedMode } from '@devvit/web/client';
 import GameSetup from './components/GameSetup/GameSetup';
 export const Splash = () => {
-    const [customConfig, setCustomConfig] = useState({
-        subreddit: '',
-        seed: '',
+    const [customConfig, setCustomConfig] = useState(() => ({
+        subreddit: localStorage.getItem('redditdle_custom_subreddit') ?? '',
+        seed: localStorage.getItem('redditdle_custom_seed') ?? '',
         isEndless: false,
-    });
-    useEffect(() => {
-        setCustomConfig({
-            subreddit: localStorage.getItem('redditdle_custom_subreddit') ?? '',
-            seed: localStorage.getItem('redditdle_custom_seed') ?? '',
-            isEndless: false,
-        });
-    }, []);
+    }));
     const handleConfigChange = (newConfig) => {
         setCustomConfig((prev) => {
             if (newConfig.subreddit !== undefined)

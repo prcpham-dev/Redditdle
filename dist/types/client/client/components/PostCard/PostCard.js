@@ -1,7 +1,6 @@
 import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 import { useState, useEffect, useRef } from 'react';
 import styles from './PostCard.module.css';
-import { navigateTo } from '@devvit/web/client';
 const formatUpvotes = (num) => {
     if (num >= 1_000_000)
         return (num / 1_000_000).toFixed(1) + 'M';
@@ -36,10 +35,12 @@ function useCountUp(target, active, duration = 1500) {
     const [display, setDisplay] = useState(0);
     const rafRef = useRef(null);
     useEffect(() => {
+        /* eslint-disable react-hooks/set-state-in-effect */
         if (!active) {
             setDisplay(0);
             return;
         }
+        /* eslint-enable react-hooks/set-state-in-effect */
         const start = performance.now();
         const tick = (now) => {
             const elapsed = now - start;
@@ -62,10 +63,50 @@ function useCountUp(target, active, duration = 1500) {
 }
 export default function PostCard({ post, onClick, showUpvotes, status = 'none' }) {
     const [isImageLoading, setIsImageLoading] = useState(true);
+    const [copied, setCopied] = useState(false);
     useEffect(() => {
+        /* eslint-disable react-hooks/set-state-in-effect */
         if (post.image)
             setIsImageLoading(true);
+        /* eslint-enable react-hooks/set-state-in-effect */
     }, [post.image]);
+    const handleCopyLink = async (e) => {
+        e.stopPropagation();
+        if (!redditLink)
+            return;
+        let success = false;
+        try {
+            if (navigator.clipboard && window.isSecureContext) {
+                await navigator.clipboard.writeText(redditLink);
+                success = true;
+            }
+        }
+        catch (err) {
+            console.warn('Clipboard API failed, using fallback', err);
+        }
+        if (!success) {
+            try {
+                const textArea = document.createElement('textarea');
+                textArea.value = redditLink;
+                textArea.style.position = 'fixed';
+                textArea.style.top = '0';
+                textArea.style.left = '0';
+                textArea.style.opacity = '0';
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                success = document.execCommand('copy');
+                document.body.removeChild(textArea);
+            }
+            catch (err) {
+                console.error('Fallback copy failed', err);
+            }
+        }
+        if (success) {
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        }
+    };
     const animatedUpvotes = useCountUp(post.upvotes, showUpvotes);
     const cardClasses = [styles.card, post.image && styles.hasImage]
         .filter(Boolean)
@@ -92,9 +133,6 @@ export default function PostCard({ post, onClick, showUpvotes, status = 'none' }
     const redditLink = post.permalink
         ? `https://np.reddit.com${post.permalink}`
         : null;
-    return (_jsxs("div", { className: cardClasses, onClick: onClick, onKeyDown: handleKeyDown, role: onClick ? 'button' : undefined, tabIndex: onClick ? 0 : undefined, children: [_jsxs("div", { className: styles.titleArea, children: [post.image && (_jsxs("div", { className: styles.imageContainer, children: [isImageLoading && _jsx("div", { className: styles.skeleton }), _jsx("img", { src: post.image, alt: "", className: `${styles.postImage} ${isImageLoading ? styles.hiddenImage : ''}`, loading: "lazy", decoding: "async", onLoad: () => setIsImageLoading(false), onError: () => setIsImageLoading(false) })] })), _jsx("h2", { className: styles.title, children: post.title })] }), _jsx("div", { className: styles.upvotesContainer, children: showUpvotes ? (_jsxs(_Fragment, { children: [_jsxs("div", { className: upvoteRowClass, children: [_jsx("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", className: styles.upvoteArrow, children: _jsx("path", { d: "M12 4L4 14h5v6h6v-6h5L12 4z" }) }), _jsx("span", { className: styles.upvoteCount, children: formatUpvotes(animatedUpvotes) })] }), _jsxs("div", { className: postMetaClass, children: [post.author && (_jsxs("span", { className: styles.metaAuthor, children: ["u/", post.author] })), post.createdAt > 0 && (_jsx("span", { className: styles.metaDate, children: relativeTime(post.createdAt) })), redditLink && (_jsx("button", { type: "button", className: styles.metaLink, onClick: (e) => {
-                                        e.stopPropagation();
-                                        navigateTo(redditLink);
-                                    }, children: "View on Reddit \u2197" }))] })] })) : (_jsx("span", { className: styles.hiddenCount, children: "???" })) })] }));
+    return (_jsxs("div", { className: cardClasses, onClick: onClick, onKeyDown: handleKeyDown, role: onClick ? 'button' : undefined, tabIndex: onClick ? 0 : undefined, children: [_jsxs("div", { className: styles.titleArea, children: [post.image && (_jsxs("div", { className: styles.imageContainer, children: [isImageLoading && _jsx("div", { className: styles.skeleton }), _jsx("img", { src: post.image, alt: "", className: `${styles.postImage} ${isImageLoading ? styles.hiddenImage : ''}`, loading: "lazy", decoding: "async", onLoad: () => setIsImageLoading(false), onError: () => setIsImageLoading(false) })] })), _jsx("h2", { className: styles.title, children: post.title })] }), _jsx("div", { className: styles.upvotesContainer, children: showUpvotes ? (_jsxs(_Fragment, { children: [_jsxs("div", { className: upvoteRowClass, children: [_jsx("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", className: styles.upvoteArrow, children: _jsx("path", { d: "M12 4L4 14h5v6h6v-6h5L12 4z" }) }), _jsx("span", { className: styles.upvoteCount, children: formatUpvotes(animatedUpvotes) })] }), _jsxs("div", { className: postMetaClass, children: [post.author && (_jsxs("span", { className: styles.metaAuthor, children: ["u/", post.author] })), post.createdAt > 0 && (_jsx("span", { className: styles.metaDate, children: relativeTime(post.createdAt) })), redditLink && (_jsx("button", { type: "button", className: `${styles.metaLink} ${copied ? styles.copied : ''}`, onClick: handleCopyLink, children: copied ? 'Copied! ✓' : 'Copy Link 📋' }))] })] })) : (_jsx("span", { className: styles.hiddenCount, children: "???" })) })] }));
 }
 //# sourceMappingURL=PostCard.js.map

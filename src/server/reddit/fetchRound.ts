@@ -66,6 +66,7 @@ async function fetchPooledPosts(
   const results = await Promise.allSettled(
     sources.map(async (source) => {
       const normalizedSub = normalizeSubreddit(subreddit);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       let posts: any[] = [];
       const queryOptions = { subredditName: normalizedSub, limit };
 

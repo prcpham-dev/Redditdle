@@ -39,10 +39,12 @@ function useCountUp(target: number, active: boolean, duration = 1500) {
   const rafRef = useRef<number | null>(null);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (!active) {
       setDisplay(0);
       return;
     }
+    /* eslint-enable react-hooks/set-state-in-effect */
     const start = performance.now();
     const tick = (now: number) => {
       const elapsed = now - start;
@@ -68,7 +70,9 @@ export default function PostCard({ post, onClick, showUpvotes, status = 'none' }
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (post.image) setIsImageLoading(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [post.image]);
 
   const handleCopyLink = async (e: React.MouseEvent) => {

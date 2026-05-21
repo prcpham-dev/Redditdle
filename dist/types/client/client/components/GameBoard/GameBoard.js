@@ -28,11 +28,13 @@ export default function GameBoard({ rounds: initialRounds = [], subreddits = [],
     useEffect(() => {
         if (hasInitialRounds)
             return; // skip — game.tsx already fetched them
+        /* eslint-disable react-hooks/set-state-in-effect */
         if (!subreddits.length) {
             setLoadError('No subreddits configured.');
             setIsInitialLoading(false);
             return;
         }
+        /* eslint-enable react-hooks/set-state-in-effect */
         let cancelled = false;
         async function loadInitialRounds() {
             setIsInitialLoading(true);
