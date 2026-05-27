@@ -1,6 +1,7 @@
 .card {
   width: 100%;
-  height: 100%;
+  flex: 1;
+  min-height: 100%;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -242,32 +243,32 @@
 
 @media (max-width: 768px) {
   .titleArea {
-    padding: 24px 24px 12px;
-    gap: 12px;
+    padding: 12px 16px 8px;
+    gap: 8px;
   }
 
   .postImage {
-    max-height: min(28vh, 200px);
+    max-height: 30vh;
   }
 
   .title {
-    font-size: 20px;
-    -webkit-line-clamp: 4;
+    font-size: 16px;
+    -webkit-line-clamp: 3;
   }
 
   /* Compact layout for mobile stacked cards that contain images */
   .card.hasImage .titleArea {
-    padding: 16px 16px 8px;
-    gap: 8px;
+    padding: 8px 12px 4px;
+    gap: 6px;
   }
 
   .card.hasImage .imageContainer {
-    max-height: min(18vh, 120px);
-    min-height: 80px;
+    max-height: 30vh;
+    min-height: 60px;
   }
 
   .card.hasImage .postImage {
-    max-height: min(18vh, 120px);
+    max-height: 30vh;
   }
 
   .card.hasImage .skeleton {
@@ -281,33 +282,28 @@
   }
 
   .upvotesContainer {
-    padding: 8px 16px 16px;
-  }
-
-  .upvoteLabel {
-    font-size: 12px;
-    margin-bottom: 6px;
+    padding: 4px 12px 8px;
   }
 
   .upvoteCount,
   .hiddenCount {
-    font-size: 36px;
+    font-size: 24px;
   }
 
   .upvoteArrow {
-    width: 36px;
-    height: 36px;
+    width: 22px;
+    height: 22px;
   }
 
   .postMeta {
-    margin-top: 6px;
-    gap: 4px;
+    margin-top: 2px;
+    gap: 3px;
   }
 
   .metaAuthor,
   .metaDate,
   .metaLink {
-    font-size: 10px;
+    font-size: 8px;
   }
 }
 
@@ -339,10 +335,8 @@
 
   .card.hasImage .imageContainer {
     width: 100%;
-    /* Grow up to 30vh, but gracefully shrink if the title is long, guaranteeing no clipping */
-    flex: 1 1 auto;
-    max-height: 30vh;
-    min-height: 0;
+    flex: 0 0 25vh;
+    height: 25vh;
     position: relative;
     z-index: auto;
   }
@@ -351,8 +345,7 @@
     width: 100%;
     height: 100%;
     object-fit: contain;
-    /* Ensures the whole image is visible, no cropping! */
-    max-height: unset;
+    max-height: 100%;
     opacity: 1;
   }
 
