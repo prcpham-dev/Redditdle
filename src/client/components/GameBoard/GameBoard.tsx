@@ -137,11 +137,8 @@ export default function GameBoard({
     }
 
     const nextIndex = currentRoundIndex + 1;
-    if (nextIndex < rounds.length) {
-      setHasGuessed(false);
-      setCurrentRoundIndex(nextIndex);
-      return;
-    }
+    setHasGuessed(false);
+    setCurrentRoundIndex(nextIndex);
   };
 
   if (isInitialLoading) {
@@ -237,9 +234,10 @@ export default function GameBoard({
       : 'Next';
 
   return (
-    <div className={`fixed inset-0 flex flex-col md:flex-row overflow-hidden ${styles.boardRoot}`}>
-      {/* Header */}
-      <div className={`pointer-events-none z-50 ${styles.roundIndicatorContainer}`}>
+    <div className={`fixed inset-0 overflow-y-auto overflow-x-hidden md:overflow-hidden ${styles.boardRoot}`}>
+      <div className="relative flex flex-col md:flex-row min-h-[100dvh] w-full">
+        {/* Header */}
+        <div className={`pointer-events-none z-50 ${styles.roundIndicatorContainer}`}>
         <div className="pointer-events-auto flex flex-col items-center">
           <div className={styles.desktopHeaderInfo}>
             <span className={styles.desktopRoundText}>Round {currentRound.round}</span>
@@ -257,8 +255,8 @@ export default function GameBoard({
         </div>
       </div>
 
-      {/* Center Overlay */}
-      <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-40">
+      {/* Desktop-only Center Overlay — absolute within the side-by-side layout */}
+      <div className={`${styles.centerOverlay} pointer-events-none z-40`}>
         <div className={styles.centerOverlayLayout}>
           <div className={styles.centerOverlaySideText}>
             <span className={styles.roundText}>Round {currentRound.round}</span>
@@ -296,12 +294,44 @@ export default function GameBoard({
       </div>
 
       {/* Cards */}
-      <div key={`left-${currentRoundIndex}`} className={`flex-1 min-h-0 w-full relative ${styles.leftCard} ${styles.fadeIn}`}>
+      <div key={`left-${currentRoundIndex}`} className={`flex flex-col w-full min-h-[42vh] relative md:flex-1 md:min-h-0 ${styles.leftCard} ${styles.fadeIn}`}>
         <PostCard post={postA} onClick={() => handleGuess('A')} showUpvotes={hasGuessed} status={getPostStatus('A')} />
       </div>
-      <div key={`right-${currentRoundIndex}`} className={`flex-1 min-h-0 w-full relative ${styles.fadeIn}`}>
+
+      {/* Mobile-only inline divider — sits in DOM between the 2 cards, always exactly at the boundary */}
+      <div className={styles.mobileDivider}>
+        <span className={styles.mobileDividerRound}>Round {currentRound.round}</span>
+        {hasGuessed ? (
+          <div
+            className={`${styles.centerCircle} ${roundStatuses[currentRoundIndex] === 'correct'
+              ? styles.circleCorrect
+              : styles.circleWrong
+              } ${nextButtonBusy ? styles.circleLoading : ''}`}
+            onClick={!nextButtonBusy ? () => void handleNextRound() : undefined}
+            role="button"
+            tabIndex={0}
+            aria-disabled={nextButtonBusy}
+            onKeyDown={(e) => {
+              if (!nextButtonBusy && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                void handleNextRound();
+              }
+            }}
+          >
+            <span className={styles.vsText}>{nextLabel}</span>
+          </div>
+        ) : (
+          <div className={styles.centerCircle}>
+            <span className={styles.vsText}>VS</span>
+          </div>
+        )}
+        <span className={styles.mobileDividerSubreddit}>{currentRound.subreddit}</span>
+      </div>
+
+      <div key={`right-${currentRoundIndex}`} className={`flex flex-col w-full min-h-[42vh] relative md:flex-1 md:min-h-0 ${styles.fadeIn}`}>
         <PostCard post={postB} onClick={() => handleGuess('B')} showUpvotes={hasGuessed} status={getPostStatus('B')} />
       </div>
     </div>
+  </div>
   );
 }

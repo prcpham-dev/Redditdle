@@ -3,14 +3,12 @@
   background-color: #121212;
 }
 
-/* Left card divider */
+/* Left card divider — no border on mobile, only a right border on desktop */
 .leftCard {
-  border-bottom: 1px solid #1f2937;
 }
 
 @media (min-width: 768px) {
   .leftCard {
-    border-bottom: none;
     border-right: 1px solid #1f2937;
   }
 }
@@ -34,6 +32,21 @@
   }
 }
 
+/* Desktop-only center overlay — hidden on mobile, replaced by inline divider */
+.centerOverlay {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .centerOverlay {
+    display: flex;
+    position: absolute;
+    inset: 0;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
 /* Center Overlay Layout */
 .centerOverlayLayout {
   display: flex;
@@ -41,13 +54,17 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
+  width: 100%;
+  padding: 0 1rem;
+  box-sizing: border-box;
 }
 
 .centerOverlaySideText {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 150px;
+  flex: 1;
+  min-width: 0;
 }
 
 .roundText {
@@ -142,6 +159,12 @@
   font-weight: bold;
   color: #ffffff;
   margin-bottom: 16px;
+}
+
+@media (max-width: 480px) {
+  .gameOverTitle {
+    font-size: 32px;
+  }
 }
 
 .gameOverScore {
@@ -279,5 +302,40 @@
 
   50% {
     transform: scale(0.96);
+  }
+}
+
+/* Mobile-only inline divider between the two cards */
+.mobileDivider {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  padding: 6px 1rem;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 40;
+  background-color: #121212;
+}
+
+.mobileDividerRound {
+  font-size: 0.8rem;
+  font-weight: bold;
+  color: #9ca3af;
+  white-space: nowrap;
+}
+
+.mobileDividerSubreddit {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #6b7280;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  .mobileDivider {
+    display: none;
   }
 }
